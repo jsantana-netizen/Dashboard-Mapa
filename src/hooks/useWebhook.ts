@@ -12,6 +12,7 @@ export function useWebhook(): void {
   const ingestFullRefresh = useCoverageStore(s => s.ingestFullRefresh)
   const setConnectionStatus = useUiStore(s => s.setConnectionStatus)
   const setLastReceivedAt = useUiStore(s => s.setLastReceivedAt)
+  const manualRefreshTrigger = useUiStore(s => s.manualRefreshTrigger)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -49,5 +50,5 @@ export function useWebhook(): void {
       cancelled = true
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [ingestFullRefresh, setConnectionStatus, setLastReceivedAt])
+  }, [ingestFullRefresh, setConnectionStatus, setLastReceivedAt, manualRefreshTrigger])
 }

@@ -11,6 +11,7 @@ interface UiState {
   connectionStatus: ConnectionStatus
   lastReceivedAt: string | null
   showCqMarkers: boolean
+  manualRefreshTrigger: number
 
   setActiveRegion: (region: Region) => void
   selectState: (code: StateCode | null) => void
@@ -18,6 +19,7 @@ interface UiState {
   setConnectionStatus: (status: ConnectionStatus) => void
   setLastReceivedAt: (ts: string) => void
   toggleCqMarkers: () => void
+  triggerManualRefresh: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -28,6 +30,7 @@ export const useUiStore = create<UiState>((set) => ({
   connectionStatus: 'idle',
   lastReceivedAt: null,
   showCqMarkers: false,
+  manualRefreshTrigger: 0,
 
   setActiveRegion: (region) => set({ activeRegion: region, selectedStateCode: null }),
 
@@ -49,4 +52,6 @@ export const useUiStore = create<UiState>((set) => ({
   setLastReceivedAt: (ts) => set({ lastReceivedAt: ts }),
 
   toggleCqMarkers: () => set((s) => ({ showCqMarkers: !s.showCqMarkers })),
+
+  triggerManualRefresh: () => set((s) => ({ manualRefreshTrigger: s.manualRefreshTrigger + 1 })),
 }))
