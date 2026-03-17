@@ -149,6 +149,57 @@ const europeArray = Object.values(europeByCountry).map(c => {
   }
 })
 
+// ── Aggregate USA rows by city (NEW) ─────────────────────────────────────────
+const cityAgg = {}
+
+for (const row of usaRows) {
+  const stateCode = STATE_CODES[row.state_name] ?? row.state_name
+  const cityName  = row.city_name
+  if (!cityName) continue
+
+  const cityKey = `${stateCode}__${cityName}`
+  if (!cityAgg[cityKey]) {
+    cityAgg[cityKey] = {
+      city:              cityName,
+      state:             stateCode,
+      customerQuotes:    0,
+      cqs_con_vq_feasible: 0,
+      vendorQuotes:      0,
+      latSum:            0,
+      lngSum:            0,
+      locCount:          0,
+    }
+  }
+  const c = cityAgg[cityKey]
+  c.customerQuotes     += num(row.total_cqs)
+  c.cqs_con_vq_feasible += num(row.cqs_con_vq)
+  c.vendorQuotes       += num(row.total_vqs_feasible)
+  c.latSum             += num(row.latitude)
+  c.lngSum             += num(row.longitude)
+  c.locCount           += 1
+}
+
+// Group into { "TX": [...], "CA": [...] }, sorted by customerQuotes desc
+const cities = {}
+for (const c of Object.values(cityAgg)) {
+  if (!cities[c.state]) cities[c.state] = []
+  cities[c.state].push({
+    city:              c.city,
+    customerQuotes:    c.customerQuotes,
+    cqs_con_vq_feasible: c.cqs_con_vq_feasible,
+    vendorQuotes:      c.vendorQuotes,
+    pct_feasible:      c.customerQuotes > 0
+      ? Math.round((c.cqs_con_vq_feasible / c.customerQuotes) * 10000) / 100
+      : 0,
+    lat:       c.latSum / c.locCount,
+    lng:       c.lngSum / c.locCount,
+    locations: c.locCount,
+  })
+}
+for (const state of Object.keys(cities)) {
+  cities[state].sort((a, b) => b.customerQuotes - a.customerQuotes)
+}
+
 // ── Build individual CQ location points ──────────────────────────────────────
 const cq_locations = rows
   .filter(r => r.latitude != null && r.longitude != null)
@@ -210,5 +261,6 @@ return [{
     states:       statesArray,
     europe:       europeArray,
     cq_locations: cq_locations,
+    cities:       cities,          // NEW: city-level data keyed by state code
   }
 }]

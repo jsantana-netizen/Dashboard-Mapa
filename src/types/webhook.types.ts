@@ -48,6 +48,17 @@ export interface N8nCqLocation {
   bw?: string                           // bandwidth, e.g. "100M", "1G"
 }
 
+export interface N8nCityEntry {
+  city: string
+  customerQuotes: number
+  cqs_con_vq_feasible: number
+  vendorQuotes: number
+  pct_feasible: number
+  lat: number
+  lng: number
+  locations: number
+}
+
 export interface N8nWebhookResponse {
   success: boolean
   timestamp: string
@@ -58,6 +69,7 @@ export interface N8nWebhookResponse {
   states: N8nStateEntry[]
   europe: N8nEuropeEntry[]
   cq_locations?: N8nCqLocation[]        // optional — feature-flagged on the n8n side
+  cities?: Record<string, N8nCityEntry[]>  // keyed by state code, e.g. "TX"
 }
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'error' | 'stale'

@@ -5,9 +5,10 @@ import { formatCount } from '../../utils/formatters'
 import { TIER_COLORS, classifyTier } from '../../utils/coverageClassifier'
 
 export function StateDetailCard() {
-  const selectedStateCode = useUiStore(s => s.selectedStateCode)
-  const selectState = useUiStore(s => s.selectState)
-  const getRecord = useCoverageStore(s => s.getRecord)
+  const selectedStateCode   = useUiStore(s => s.selectedStateCode)
+  const selectState         = useUiStore(s => s.selectState)
+  const getRecord           = useCoverageStore(s => s.getRecord)
+  const getCitiesForState   = useCoverageStore(s => s.getCitiesForState)
 
   if (!selectedStateCode) return null
   const record = getRecord(selectedStateCode)
@@ -15,6 +16,7 @@ export function StateDetailCard() {
 
   const tier = classifyTier(record.coverageRatio)
   const tierColor = TIER_COLORS[tier]
+  const cities = getCitiesForState(selectedStateCode)
 
   // Bar widths relative to customerQuotes
   const maxBar = Math.max(record.customerQuotes, record.cqsWithFeasibleVQ * 20)
@@ -95,6 +97,54 @@ export function StateDetailCard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* City breakdown */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-500 uppercase tracking-wider">Ciudades</p>
+          {cities.length > 0 && (
+            <span className="text-xs text-gray-600">{cities.length} ciudades</span>
+          )}
+        </div>
+
+        {cities.length === 0 && (
+          <p className="text-xs text-gray-600 py-1">Sin datos de ciudades</p>
+        )}
+
+        {cities.map(city => {
+          const cityTier  = classifyTier(city.customerQuotes > 0 ? city.pctFeasible / 100 : null)
+          const cityColor = TIER_COLORS[cityTier]
+          const barWidth  = cities[0].customerQuotes > 0
+            ? Math.round((city.customerQuotes / cities[0].customerQuotes) * 100)
+            : 0
+          return (
+            <div key={city.city} className="bg-gray-800/40 rounded-lg px-3 py-2 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-gray-200 truncate">{city.city}</span>
+                <span className="text-xs tabular-nums flex-shrink-0" style={{ color: cityColor }}>
+                  {city.pctFeasible.toFixed(1)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-700 rounded-full h-1">
+                  <div
+                    className="h-1 rounded-full"
+                    style={{ width: `${barWidth}%`, backgroundColor: cityColor }}
+                  />
+                </div>
+                <span className="text-xs text-gray-500 tabular-nums w-12 text-right flex-shrink-0">
+                  {formatCount(city.customerQuotes)} CQ
+                </span>
+              </div>
+              <div className="flex gap-2 text-xs text-gray-600">
+                <span>{formatCount(city.cqsWithFeasibleVQ)} factibles</span>
+                <span>·</span>
+                <span>{formatCount(city.vendorQuotes)} VQs</span>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

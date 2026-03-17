@@ -44,6 +44,18 @@ export interface CqLocation {
   bw?: string             // bandwidth, e.g. "100M", "1G"
 }
 
+export interface CityCoverageRecord {
+  city: string
+  state: StateCode
+  customerQuotes: number
+  cqsWithFeasibleVQ: number
+  vendorQuotes: number
+  pctFeasible: number
+  lat: number
+  lng: number
+  locations: number
+}
+
 export interface ServiceTypeSummary {
   BIA: number
   DIA: number
@@ -58,6 +70,7 @@ export interface CoverageDataset {
   summary: CoverageSummary
   cqLocations: CqLocation[]
   serviceTypeSummary: ServiceTypeSummary
+  citiesByState: Record<StateCode, CityCoverageRecord[]>
 }
 
 export type CoverageTier =

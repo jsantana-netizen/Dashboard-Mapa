@@ -1,5 +1,5 @@
-import type { N8nWebhookResponse, N8nStateEntry, N8nEuropeEntry } from '../types/webhook.types'
-import type { CoverageDataset, StateCoverageRecord, CqLocation, ServiceTypeSummary } from '../types/coverage.types'
+import type { N8nWebhookResponse, N8nStateEntry, N8nEuropeEntry, N8nCityEntry } from '../types/webhook.types'
+import type { CoverageDataset, StateCoverageRecord, CqLocation, ServiceTypeSummary, CityCoverageRecord } from '../types/coverage.types'
 
 const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL as string | undefined
 
@@ -98,12 +98,32 @@ function parseN8nResponse(raw: N8nWebhookResponse): CoverageDataset {
     else if (st) serviceTypeSummary.other++
   }
 
+  // Parse city data grouped by state code
+  const citiesByState: Record<string, CityCoverageRecord[]> = {}
+  if (raw.cities) {
+    for (const [stateCode, cityList] of Object.entries(raw.cities)) {
+      const code = stateCode.toUpperCase()
+      citiesByState[code] = cityList.map((c: N8nCityEntry): CityCoverageRecord => ({
+        city:             c.city,
+        state:            code,
+        customerQuotes:   c.customerQuotes,
+        cqsWithFeasibleVQ: c.cqs_con_vq_feasible,
+        vendorQuotes:     c.vendorQuotes,
+        pctFeasible:      c.pct_feasible,
+        lat:              c.lat,
+        lng:              c.lng,
+        locations:        c.locations,
+      }))
+    }
+  }
+
   return {
     reportGeneratedAt: raw.timestamp ?? now,
     periodLabel: 'En vivo',
     records: [...usaRecords, ...europeRecords],
     cqLocations,
     serviceTypeSummary,
+    citiesByState,
     summary: {
       usa: {
         totalUnits: usaSummary?.total_states ?? usaRecords.length,
