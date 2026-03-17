@@ -4,7 +4,7 @@ import { useUiStore } from '../store/uiStore'
 import { fetchCoverageData } from '../services/webhookService'
 import { buildMockDataset } from '../utils/mockData'
 
-const POLL_INTERVAL_MS = parseInt(import.meta.env.VITE_POLL_INTERVAL_MS ?? '60000', 10)
+const POLL_INTERVAL_MS = parseInt(import.meta.env.VITE_POLL_INTERVAL_MS ?? '86400000', 10)
 const ERROR_RETRY_MS = Math.min(15_000, POLL_INTERVAL_MS) // retry faster after errors
 const USE_MOCK = !import.meta.env.VITE_WEBHOOK_URL
 
